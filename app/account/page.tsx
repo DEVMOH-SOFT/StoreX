@@ -1,31 +1,58 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { LayoutDashboard, ShoppingBag, MapPin, CreditCard, Heart, Headphones, Settings, LogOut, ArrowRight, User } from 'lucide-react';
 import { useOrders } from '@/context/OrderContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { formatNGN } from '@/data/products';
+import { api } from '@/lib/api';
 
 export default function AccountPage() {
   const { orders } = useOrders();
   const { wishlist } = useWishlist();
   const [activeTab, setActiveTab] = useState<'dashboard' | 'orders' | 'addresses' | 'wishlist'>('dashboard');
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await api.account.getProfile();
+        if (res.success && res.profile) {
+          setProfile(res.profile);
+        }
+      } catch (err) {
+        console.warn('[StoreX Account] Failed to fetch account profile from API:', err);
+      }
+    }
+
+    loadProfile();
+  }, []);
+
+  const customerName = profile?.name || 'Muhammed Adegoke';
+  const customerEmail = profile?.email || 'muhammed@example.com';
+  const initials = customerName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 
   const totalOrdersCount = orders.length;
   const activeOrdersCount = orders.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
+  const walletBalance = profile?.metrics?.walletBalance || 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex items-center gap-4 border-b border-slate-200 pb-4">
         <div className="w-12 h-12 rounded-full bg-slate-900 text-white font-extrabold text-base flex items-center justify-center shadow-md">
-          MA
+          {initials}
         </div>
         <div>
           <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-            Welcome back, Muhammed 👋
+            Welcome back, {customerName.split(' ')[0]} 👋
           </h1>
-          <p className="text-xs text-slate-500">muhammed@example.com • Premium Member</p>
+          <p className="text-xs text-slate-500">{customerEmail} • Premium Member</p>
         </div>
       </div>
 
@@ -102,7 +129,7 @@ export default function AccountPage() {
 
                 <div className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm">
                   <div className="text-xs text-slate-400 font-medium">Wallet Balance</div>
-                  <div className="text-2xl font-extrabold text-slate-900 mt-1">₦0.00</div>
+                  <div className="text-2xl font-extrabold text-slate-900 mt-1">{formatNGN(walletBalance)}</div>
                 </div>
               </div>
 
@@ -116,22 +143,26 @@ export default function AccountPage() {
                 </div>
 
                 <div className="space-y-3">
-                  {orders.slice(0, 3).map((order) => (
-                    <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 text-xs">
-                      <div>
-                        <div className="font-bold text-slate-900">#{order.id}</div>
-                        <div className="text-slate-400">{order.date} • {formatNGN(order.total)}</div>
+                  {orders.length === 0 ? (
+                    <p className="text-xs text-slate-500 py-4">No recent orders yet.</p>
+                  ) : (
+                    orders.slice(0, 3).map((order) => (
+                      <div key={order.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 text-xs">
+                        <div>
+                          <div className="font-bold text-slate-900">#{order.id}</div>
+                          <div className="text-slate-400">{order.date} • {formatNGN(order.total)}</div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
+                            {order.status}
+                          </span>
+                          <Link href={`/orders/${order.id}`} className="text-indigo-600 font-bold hover:underline">
+                            Track
+                          </Link>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
-                          {order.status}
-                        </span>
-                        <Link href={`/orders/${order.id}`} className="text-indigo-600 font-bold hover:underline">
-                          Track
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             </>
@@ -144,9 +175,9 @@ export default function AccountPage() {
               </h3>
               <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/50 space-y-1 text-xs">
                 <span className="bg-indigo-600 text-white font-bold text-[10px] px-2 py-0.5 rounded uppercase">Default</span>
-                <h4 className="font-bold text-slate-900 text-sm pt-1">Muhammed Adegoke</h4>
-                <p className="text-slate-600">12, Freedom Street, Ikeja, Lagos, Nigeria</p>
-                <p className="text-slate-500">Phone: +234 801 234 5678</p>
+                <h4 className="font-bold text-slate-900 text-sm pt-1">{profile?.address?.fullName || customerName}</h4>
+                <p className="text-slate-600">{profile?.address?.address || '12, Freedom Street, Ikeja'}, {profile?.address?.city || 'Ikeja'}, {profile?.address?.state || 'Lagos'}, Nigeria</p>
+                <p className="text-slate-500">Phone: {profile?.address?.phone || '+234 801 234 5678'}</p>
               </div>
             </div>
           )}
