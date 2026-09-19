@@ -15,6 +15,13 @@ export interface ProductSpec {
   value: string;
 }
 
+export interface Category {
+  name: string;
+  icon: string;
+  count: string;
+  image: string;
+}
+
 export interface Product {
   id: string;
   name: string;

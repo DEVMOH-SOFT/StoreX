@@ -6,6 +6,8 @@ import ProductCard from '@/components/products/ProductCard';
 import { CATEGORIES } from '@/data/products';
 import { Product, Category } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 async function getFeaturedProducts(): Promise<Product[]> {
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
