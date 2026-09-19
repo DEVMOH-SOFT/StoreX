@@ -1,21 +1,51 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, CheckCircle2, Clock, MapPin, Phone, Truck, Package } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, MapPin, Phone, Truck, Loader2 } from 'lucide-react';
 import { useOrders } from '@/context/OrderContext';
 import { formatNGN } from '@/data/products';
+import { api } from '@/lib/api';
+import { Order } from '@/types';
 
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
-  const { getOrderById, orders } = useOrders();
-  const order = getOrderById(params.id) || orders[0];
+  const { getOrderById } = useOrders();
+  const [order, setOrder] = useState<Order | null>(getOrderById(params.id) || null);
+  const [loading, setLoading] = useState<boolean>(!order);
+
+  useEffect(() => {
+    async function fetchLiveOrder() {
+      try {
+        const res = await api.orders.getById(params.id);
+        if (res.success && res.order) {
+          setOrder(res.order);
+        }
+      } catch (err) {
+        console.warn(`[StoreX OrderTracking] Could not fetch live order ${params.id}:`, err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchLiveOrder();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-24 text-center space-y-3">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0d2d9e] mx-auto" />
+        <p className="text-xs text-slate-500">Retrieving live shipment tracking...</p>
+      </div>
+    );
+  }
 
   if (!order) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-4">
         <h2 className="text-2xl font-bold text-slate-900">Order Not Found</h2>
-        <Link href="/orders" className="text-indigo-600 font-semibold text-xs">
+        <p className="text-xs text-slate-500">We couldn't find order #{params.id}.</p>
+        <Link href="/orders" className="text-[#0d2d9e] font-semibold text-xs hover:underline">
           View All Orders
         </Link>
       </div>
@@ -42,8 +72,8 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
           </p>
         </div>
 
-        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-          <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-[#0d2d9e] border border-blue-200">
+          <span className="w-2 h-2 rounded-full bg-[#0d2d9e] animate-pulse" />
           {order.status}
         </span>
       </div>
@@ -54,7 +84,19 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
         <div className="hidden md:block">
           <div className="relative flex items-center justify-between">
             <div className="absolute left-6 right-6 top-4 h-1 bg-slate-200 -z-0">
-              <div className="h-full bg-indigo-600 w-3/4 transition-all duration-500" />
+              <div
+                className="h-full bg-[#0d2d9e] transition-all duration-500"
+                style={{
+                  width:
+                    order.status === 'Delivered'
+                      ? '100%'
+                      : order.status === 'Out for Delivery'
+                      ? '66%'
+                      : order.status === 'Shipped'
+                      ? '50%'
+                      : '25%',
+                }}
+              />
             </div>
 
             {delivery.events.map((event, idx) => (
@@ -62,7 +104,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                 <div
                   className={`w-9 h-9 rounded-full border-2 flex items-center justify-center font-bold text-xs shadow-sm transition-all ${
                     event.completed
-                      ? 'bg-indigo-600 border-indigo-600 text-white'
+                      ? 'bg-[#0d2d9e] border-[#0d2d9e] text-white'
                       : 'bg-white border-slate-300 text-slate-400'
                   }`}
                 >
@@ -85,7 +127,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
               <div key={idx} className="relative">
                 <div
                   className={`absolute -left-[21px] top-0 w-3 h-3 rounded-full border-2 ${
-                    event.completed ? 'bg-indigo-600 border-indigo-600' : 'bg-white border-slate-300'
+                    event.completed ? 'bg-[#0d2d9e] border-[#0d2d9e]' : 'bg-white border-slate-300'
                   }`}
                 />
                 <div className="text-xs font-bold text-slate-900">{event.title}</div>
@@ -97,9 +139,9 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
         </div>
 
         {/* Live Carrier Card */}
-        <div className="bg-slate-900 text-white rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-[#050a1c] text-white rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-[#0d2d9e] flex items-center justify-center text-white flex-shrink-0">
               <Truck className="w-5 h-5" />
             </div>
             <div>
@@ -125,7 +167,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
           </h3>
           <div className="space-y-3 text-xs">
             <div className="flex items-start gap-3 text-slate-700">
-              <MapPin className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" />
+              <MapPin className="w-4 h-4 text-[#0d2d9e] flex-shrink-0 mt-0.5" />
               <div>
                 <div className="font-bold text-slate-900">Delivery Address</div>
                 <div>{delivery.address.fullName}</div>
@@ -134,7 +176,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
             </div>
 
             <div className="flex items-center gap-3 text-slate-700">
-              <Phone className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+              <Phone className="w-4 h-4 text-[#0d2d9e] flex-shrink-0" />
               <div>
                 <div className="font-bold text-slate-900">Phone Number</div>
                 <div>{delivery.address.phone}</div>
@@ -167,7 +209,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
 
           <div className="border-t border-slate-100 pt-3 flex justify-between items-baseline text-xs">
             <span className="font-bold text-slate-900">Total Paid</span>
-            <span className="font-extrabold text-indigo-600 text-sm">{formatNGN(order.total)}</span>
+            <span className="font-extrabold text-[#0d2d9e] text-sm">{formatNGN(order.total)}</span>
           </div>
         </div>
       </div>

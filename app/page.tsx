@@ -3,17 +3,42 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Truck, ShieldCheck, Headphones, RotateCcw, ChevronRight } from 'lucide-react';
 import ProductCard from '@/components/products/ProductCard';
-import { DEMO_PRODUCTS, CATEGORIES } from '@/data/products';
+import { CATEGORIES } from '@/data/products';
+import { Product, Category } from '@/types';
 
-export default function HomePage() {
-  const featuredProducts = DEMO_PRODUCTS.filter((p) => p.isFeatured).slice(0, 8);
+async function getFeaturedProducts(): Promise<Product[]> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const res = await fetch(`${apiUrl}/api/products?featured=true`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.products || [];
+  } catch (e) {
+    console.warn('[StoreX Home] Failed to fetch featured products from API:', e);
+    return [];
+  }
+}
+
+async function getCategories(): Promise<Category[]> {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const res = await fetch(`${apiUrl}/api/categories`, { cache: 'no-store' });
+    if (!res.ok) return CATEGORIES as Category[];
+    const data = await res.json();
+    return data.categories || CATEGORIES;
+  } catch (e) {
+    return CATEGORIES as Category[];
+  }
+}
+
+export default async function HomePage() {
+  const featuredProducts = await getFeaturedProducts();
+  const categories = await getCategories();
 
   return (
     <div className="space-y-12 pb-12">
-      {/* Hero Section - Initial Layout Restored with Deep Blue Theme */}
+      {/* Hero Section */}
       <section className="relative bg-[#050a1c] text-white overflow-hidden rounded-b-2xl lg:rounded-2xl max-w-7xl mx-auto my-0 lg:mt-4 shadow-2xl border border-slate-900">
-        
-        {/* Background Banner Image - Right Aligned Seamless Integration */}
         <div className="absolute inset-0 z-0">
           <Image
             src="/images/hero-banner.png"
@@ -22,11 +47,9 @@ export default function HomePage() {
             priority
             className="object-cover object-right opacity-80 md:opacity-95"
           />
-          {/* Gradient Overlay to Ensure Crisp Text Readability */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#050a1c] via-[#050a1c]/85 md:via-[#050a1c]/70 to-transparent max-w-2xl" />
         </div>
 
-        {/* Hero Content Overlay */}
         <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
           <div className="space-y-6 max-w-xl">
             <span className="inline-block text-[11px] font-extrabold tracking-widest text-blue-300 uppercase bg-[#0c2378]/90 px-3.5 py-1 rounded-full border border-blue-700/50 shadow-sm">
@@ -120,7 +143,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link
               key={cat.name}
               href={`/products?category=${encodeURIComponent(cat.name)}`}
@@ -161,11 +184,17 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {featuredProducts.length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-12 text-center text-xs text-slate-500">
+            Connecting to StoreX API for featured products...
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

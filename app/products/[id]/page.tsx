@@ -1,25 +1,77 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Star, Heart, ShoppingCart, Check, ShieldCheck, Truck, RotateCcw, ChevronRight } from 'lucide-react';
-import { DEMO_PRODUCTS, formatNGN } from '@/data/products';
+import { Star, Heart, ShoppingCart, Check, ShieldCheck, Truck, RotateCcw, ChevronRight, Loader2 } from 'lucide-react';
+import { formatNGN } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { api } from '@/lib/api';
+import { Product } from '@/types';
 
 export default function ProductDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const product = DEMO_PRODUCTS.find((p) => p.id.toLowerCase() === params.id.toLowerCase()) || DEMO_PRODUCTS[0];
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [selectedImage, setSelectedImage] = useState<string>(product.image);
-  const [selectedColor, setSelectedColor] = useState<string>(product.colors ? product.colors[0].name : '');
+  const [selectedImage, setSelectedImage] = useState<string>('');
+  const [selectedColor, setSelectedColor] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   const [added, setAdded] = useState<boolean>(false);
 
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+
+  useEffect(() => {
+    async function loadProduct() {
+      try {
+        setLoading(true);
+        const res = await api.products.getById(params.id);
+        if (res.success && res.product) {
+          setProduct(res.product);
+          setSelectedImage(res.product.image);
+          if (res.product.colors && res.product.colors.length > 0) {
+            setSelectedColor(res.product.colors[0].name);
+          }
+        }
+      } catch (err: any) {
+        setError(err.message || 'Product not found');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProduct();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-24 text-center space-y-3">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0d2d9e] mx-auto" />
+        <p className="text-xs text-slate-500">Loading gadget specifications...</p>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center space-y-4">
+        <h2 className="text-xl font-bold text-slate-900">Product Not Found</h2>
+        <p className="text-xs text-slate-500">
+          The gadget you are looking for might have been removed or is temporarily unavailable.
+        </p>
+        <Link
+          href="/products"
+          className="inline-block bg-[#0d2d9e] hover:bg-[#1142d4] text-white text-xs font-bold px-6 py-2.5 rounded-lg shadow-sm"
+        >
+          Return to Catalog
+        </Link>
+      </div>
+    );
+  }
 
   const isWishlisted = isInWishlist(product.id);
 
@@ -54,7 +106,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <div className="space-y-4">
           <div className="relative aspect-square w-full rounded-xl bg-slate-50 border border-slate-100 overflow-hidden">
             <Image
-              src={selectedImage}
+              src={selectedImage || product.image}
               alt={product.name}
               fill
               priority
@@ -70,7 +122,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   key={idx}
                   onClick={() => setSelectedImage(img)}
                   className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 flex-shrink-0 bg-slate-50 transition-all ${
-                    selectedImage === img ? 'border-indigo-600 ring-2 ring-indigo-200' : 'border-slate-200 hover:border-slate-300'
+                    selectedImage === img ? 'border-[#0d2d9e] ring-2 ring-blue-200' : 'border-slate-200 hover:border-slate-300'
                   }`}
                 >
                   <Image src={img} alt={`${product.name} thumb ${idx}`} fill className="object-contain p-2" />
@@ -84,7 +136,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         <div className="space-y-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="bg-indigo-50 text-indigo-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+              <span className="bg-blue-50 text-[#0d2d9e] text-xs font-bold px-2.5 py-0.5 rounded-full">
                 {product.category}
               </span>
               {product.inStock && (
@@ -139,7 +191,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           {product.colors && product.colors.length > 0 && (
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                Color: <span className="text-indigo-600">{selectedColor}</span>
+                Color: <span className="text-[#0d2d9e]">{selectedColor}</span>
               </label>
               <div className="flex items-center gap-3">
                 {product.colors.map((c) => (
@@ -148,7 +200,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                     onClick={() => setSelectedColor(c.name)}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
                       selectedColor === c.name
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-900 ring-2 ring-indigo-200'
+                        ? 'border-[#0d2d9e] bg-blue-50 text-[#0d2d9e] ring-2 ring-blue-200'
                         : 'border-slate-200 text-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -217,7 +269,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 className={`py-3.5 px-6 rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all ${
                   added
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'
+                    : 'bg-[#0d2d9e] hover:bg-[#1142d4] text-white shadow-blue-900/20'
                 }`}
               >
                 {added ? (
@@ -243,15 +295,15 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           {/* Delivery Highlights */}
           <div className="border-t border-slate-100 pt-4 grid grid-cols-3 gap-2 text-center text-[11px] text-slate-500">
             <div className="flex flex-col items-center gap-1">
-              <Truck className="w-4 h-4 text-indigo-600" />
+              <Truck className="w-4 h-4 text-[#0d2d9e]" />
               <span>Free Delivery</span>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <ShieldCheck className="w-4 h-4 text-indigo-600" />
+              <ShieldCheck className="w-4 h-4 text-[#0d2d9e]" />
               <span>Secure Payment</span>
             </div>
             <div className="flex flex-col items-center gap-1">
-              <RotateCcw className="w-4 h-4 text-indigo-600" />
+              <RotateCcw className="w-4 h-4 text-[#0d2d9e]" />
               <span>Easy 7-Day Returns</span>
             </div>
           </div>
