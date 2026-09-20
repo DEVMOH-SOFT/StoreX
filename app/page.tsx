@@ -5,29 +5,22 @@ import { ArrowRight, Truck, ShieldCheck, Headphones, RotateCcw, ChevronRight } f
 import ProductCard from '@/components/products/ProductCard';
 import { CATEGORIES } from '@/data/products';
 import { Product, Category } from '@/types';
+import { fetchProducts, fetchCategories } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
 async function getFeaturedProducts(): Promise<Product[]> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const res = await fetch(`${apiUrl}/api/products?featured=true`, { cache: 'no-store' });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.products || [];
+    return await fetchProducts({ featured: true });
   } catch (e) {
-    console.warn('[StoreX Home] Failed to fetch featured products from API:', e);
+    console.warn('[StoreX Home] Failed to fetch featured products:', e);
     return [];
   }
 }
 
 async function getCategories(): Promise<Category[]> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    const res = await fetch(`${apiUrl}/api/categories`, { cache: 'no-store' });
-    if (!res.ok) return CATEGORIES as Category[];
-    const data = await res.json();
-    return data.categories || CATEGORIES;
+    return await fetchCategories();
   } catch (e) {
     return CATEGORIES as Category[];
   }

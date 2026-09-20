@@ -106,3 +106,14 @@ export interface Order {
   delivery: OrderDelivery;
   paymentMethod: PaymentMethodType;
 }
+
+export interface Customer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: DeliveryAddress;
+  walletBalance: number;
+  savedAddresses: DeliveryAddress[];
+  createdAt: string;
+}

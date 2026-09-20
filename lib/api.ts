@@ -1,6 +1,6 @@
 import { Product, Category, Order, DeliveryAddress, PaymentMethodType, DeliveryMethodType } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
@@ -9,8 +9,17 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     ...(options.headers || {}),
   };
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
   try {
-    const res = await fetch(url, { ...options, headers });
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      signal: options.signal || controller.signal,
+    });
+    clearTimeout(timeoutId);
+
     const data = await res.json();
 
     if (!res.ok) {
@@ -19,6 +28,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
     return data;
   } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      console.error(`[API Timeout Error] ${options.method || 'GET'} ${url} timed out`);
+      throw new Error('Network request timed out. Please check your connection and try again.');
+    }
     console.error(`[API Client Error] ${options.method || 'GET'} ${url}:`, err.message);
     throw err;
   }

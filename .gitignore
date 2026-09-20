@@ -38,4 +38,7 @@ next-env.d.ts
 .memory/
 .agents/
 
+# local runtime data
+data/runtime_orders.json
+
 

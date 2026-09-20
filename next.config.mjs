@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  compress: true,
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       {
@@ -9,7 +11,11 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'm.media-amazon.com',
-      }
+      },
+      {
+        protocol: 'https',
+        hostname: 'zvogggrpxeuphpzwwiyh.supabase.co',
+      },
     ],
   },
 };

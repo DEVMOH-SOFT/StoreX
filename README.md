@@ -52,6 +52,8 @@ Order Tracking
 ## 🛠️ Tech Stack & Setup
 
 - **Framework**: Next.js 14 (App Router) + TypeScript
+- **Backend & API**: Native Next.js App Router Route Handlers (`app/api/*`)
+- **Database**: Supabase PostgreSQL (`@supabase/supabase-js`, `@supabase/ssr`)
 - **Styling**: Tailwind CSS + Custom StoreX Deep Blue Design Tokens
 - **Icons**: `lucide-react`
 - **State Management**: React Context Stores (`CartContext`, `WishlistContext`, `OrderContext`)
