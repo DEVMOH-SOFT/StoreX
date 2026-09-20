@@ -37,8 +37,28 @@ export const createClient = (request: NextRequest) => {
 };
 
 export async function updateSession(request: NextRequest) {
-  const { supabase, response } = createClient(request);
-  // Refresh auth token if necessary
-  await supabase.auth.getUser();
-  return response;
+  // Performance optimization: skip external auth network call if no auth cookies exist
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+
+  if (!hasAuthCookie) {
+    return NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    });
+  }
+
+  try {
+    const { supabase, response } = createClient(request);
+    await supabase.auth.getUser();
+    return response;
+  } catch {
+    return NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    });
+  }
 }
