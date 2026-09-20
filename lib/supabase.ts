@@ -214,12 +214,17 @@ export async function fetchCategories(): Promise<Category[]> {
 }
 
 export async function fetchOrders(): Promise<Order[]> {
+  const now = Date.now();
+  if (cachedOrders && (now - lastOrdersFetchTime < ORDERS_CACHE_TTL)) {
+    return cachedOrders;
+  }
+
   const client = getSupabase();
   if (client) {
     try {
       const { data, error } = await client.from('orders').select('*').order('created_at', { ascending: false });
       if (!error && data && data.length > 0) {
-        return data.map((d: any) => ({
+        cachedOrders = data.map((d: any) => ({
           id: d.id,
           date: d.date,
           items: d.items,
@@ -231,15 +236,25 @@ export async function fetchOrders(): Promise<Order[]> {
           paymentMethod: d.payment_method,
           delivery: d.delivery,
         }));
+        lastOrdersFetchTime = now;
+        return cachedOrders;
       }
     } catch (e) {
       console.warn('[Supabase API] Failed to fetch orders from Supabase:', e);
     }
   }
-  return Array.from(getLocalOrders().values());
+  const localList = Array.from(getLocalOrders().values());
+  cachedOrders = localList;
+  lastOrdersFetchTime = now;
+  return localList;
 }
 
 export async function fetchOrderById(id: string): Promise<Order | null> {
+  if (cachedOrders) {
+    const found = cachedOrders.find(o => o.id === id);
+    if (found) return found;
+  }
+
   const client = getSupabase();
   if (client) {
     try {
@@ -269,6 +284,7 @@ export async function insertOrder(order: Order): Promise<Order> {
   const local = getLocalOrders();
   local.set(order.id, order);
   saveLocalOrders(local);
+  invalidateOrdersCache();
 
   const client = getSupabase();
   if (client) {
@@ -311,6 +327,7 @@ export async function updateOrderStatusInDb(
   const local = getLocalOrders();
   local.set(id, existing);
   saveLocalOrders(local);
+  invalidateOrdersCache();
 
   const client = getSupabase();
   if (client) {
@@ -355,12 +372,17 @@ export async function recordPayment(payment: {
 }
 
 export async function fetchCustomerProfile(): Promise<Customer> {
+  const now = Date.now();
+  if (cachedProfile && (now - lastProfileFetchTime < PROFILE_CACHE_TTL)) {
+    return cachedProfile;
+  }
+
   const client = getSupabase();
   if (client) {
     try {
       const { data, error } = await client.from('profiles').select('*').maybeSingle();
       if (!error && data) {
-        return {
+        cachedProfile = {
           id: data.id,
           name: data.name,
           email: data.email,
@@ -370,6 +392,8 @@ export async function fetchCustomerProfile(): Promise<Customer> {
           savedAddresses: data.saved_addresses || [],
           createdAt: data.created_at || new Date().toISOString(),
         };
+        lastProfileFetchTime = now;
+        return cachedProfile;
       }
     } catch (e) {
       console.warn('[Supabase API] Error fetching profile from Supabase:', e);

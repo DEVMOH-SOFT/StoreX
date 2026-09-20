@@ -2,8 +2,33 @@ import { Product, Category, Order, DeliveryAddress, PaymentMethodType, DeliveryM
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
+const apiCache = new Map<string, { data: any; timestamp: number }>();
+const CLIENT_CACHE_TTL = 45 * 1000; // 45 seconds
+
+export function clearApiCache(prefix?: string) {
+  if (!prefix) {
+    apiCache.clear();
+    return;
+  }
+  for (const key of apiCache.keys()) {
+    if (key.startsWith(prefix)) {
+      apiCache.delete(key);
+    }
+  }
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  const method = (options.method || 'GET').toUpperCase();
+
+  // Instant response from client memory cache for GET requests
+  if (method === 'GET') {
+    const cached = apiCache.get(url);
+    if (cached && (Date.now() - cached.timestamp < CLIENT_CACHE_TTL)) {
+      return cached.data as T;
+    }
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     ...(options.headers || {}),
@@ -24,6 +49,15 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
     if (!res.ok) {
       throw new Error(data.error || `HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    if (method === 'GET') {
+      apiCache.set(url, { data, timestamp: Date.now() });
+    } else {
+      // Invalidate relevant cache on mutations
+      if (endpoint.startsWith('/api/orders')) {
+        clearApiCache('/api/orders');
+      }
     }
 
     return data;
