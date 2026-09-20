@@ -21,6 +21,7 @@ function ProductsContent() {
   const [searchQuery, setSearchQuery] = useState<string>(initialSearch);
   const [sortBy, setSortBy] = useState<string>('featured');
   const [mobileFilterOpen, setMobileFilterOpen] = useState<boolean>(false);
+  const isFirstLoad = React.useRef(true);
 
   useEffect(() => {
     let isCancelled = false;
@@ -48,9 +49,15 @@ function ProductsContent() {
       }
     }
 
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      loadProducts();
+      return;
+    }
+
     const timer = setTimeout(() => {
       loadProducts();
-    }, 150);
+    }, 120);
 
     return () => {
       isCancelled = true;

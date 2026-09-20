@@ -7,7 +7,7 @@ import { CATEGORIES } from '@/data/products';
 import { Product, Category } from '@/types';
 import { fetchProducts, fetchCategories } from '@/lib/supabase';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 async function getFeaturedProducts(): Promise<Product[]> {
   try {
