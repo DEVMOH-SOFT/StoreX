@@ -17,7 +17,7 @@ export const SEED_PRODUCTS: Product[] = [
     images: ['/images/products/iphone-16-pro.jpg'],
     description: 'The iPhone 16 Pro delivers powerful performance, pro-grade cameras and a stunning display. Built for creators, professionals and everyday users.',
     specs: [
-      { name: 'Display', value: '6.3" Super Retina XDR display' },
+      { name: 'Display', value: '6.3-inch Super Retina XDR display' },
       { name: 'Processor', value: 'A18 Pro chip' },
       { name: 'Storage', value: '256GB storage' },
       { name: 'OS', value: 'iOS 18' },
@@ -197,7 +197,7 @@ export const SEED_PRODUCTS: Product[] = [
     images: ['/images/products/galaxy-s25.jpg'],
     description: 'Galaxy AI is here. Epic 200MP camera, Snapdragon 8 Gen 3 for Galaxy, and built-in S Pen.',
     specs: [
-      { name: 'Display', value: '6.8" Dynamic AMOLED 2X 120Hz' },
+      { name: 'Display', value: '6.8-inch Dynamic AMOLED 2X 120Hz' },
       { name: 'Camera', value: '200MP Main + 50MP Periscope Telephoto' },
       { name: 'Storage', value: '512GB Storage / 12GB RAM' }
     ]

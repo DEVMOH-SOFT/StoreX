@@ -138,7 +138,7 @@ INSERT INTO public.products (
   '/images/products/iphone-16-pro.jpg',
   '["/images/products/iphone-16-pro.jpg"]'::jsonb,
   'The iPhone 16 Pro delivers powerful performance, pro-grade cameras and a stunning display. Built for creators, professionals and everyday users.',
-  '[{"name":"Display","value":"6.3\\" Super Retina XDR display"},{"name":"Processor","value":"A18 Pro chip"},{"name":"Storage","value":"256GB storage"},{"name":"OS","value":"iOS 18"},{"name":"Warranty","value":"1 Year Apple Official Warranty"}]'::jsonb,
+  '[{"name":"Display","value":"6.3-inch Super Retina XDR display"},{"name":"Processor","value":"A18 Pro chip"},{"name":"Storage","value":"256GB storage"},{"name":"OS","value":"iOS 18"},{"name":"Warranty","value":"1 Year Apple Official Warranty"}]'::jsonb,
   '[{"name":"Space Black","hex":"#232325"},{"name":"Natural Titanium","hex":"#a8a6a1"},{"name":"White Titanium","hex":"#f0f0ed"}]'::jsonb
 ),
 (
@@ -282,7 +282,7 @@ INSERT INTO public.products (
   '/images/products/galaxy-s25.jpg',
   '["/images/products/galaxy-s25.jpg"]'::jsonb,
   'Galaxy AI is here. Epic 200MP camera, Snapdragon 8 Gen 3 for Galaxy, and built-in S Pen.',
-  '[{"name":"Display","value":"6.8\\" Dynamic AMOLED 2X 120Hz"},{"name":"Camera","value":"200MP Main + 50MP Periscope Telephoto"},{"name":"Storage","value":"512GB Storage / 12GB RAM"}]'::jsonb,
+  '[{"name":"Display","value":"6.8-inch Dynamic AMOLED 2X 120Hz"},{"name":"Camera","value":"200MP Main + 50MP Periscope Telephoto"},{"name":"Storage","value":"512GB Storage / 12GB RAM"}]'::jsonb,
   '[]'::jsonb
 ),
 (
