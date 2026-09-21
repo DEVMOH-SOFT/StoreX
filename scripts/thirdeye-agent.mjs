@@ -11,7 +11,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STOREX_ROOT = path.resolve(__dirname, '..');
-const THIRDEYE_API = process.env.THIRDEYE_API_URL || 'http://localhost:4000';
+const THIRDEYE_API = process.env.THIRDEYE_API_URL || 'https://thirdeye-sec.vercel.app';
 const PROJECT_KEY = 'te_proj_storex_99a8b7c6';
 
 console.log('\n\x1b[36m%s\x1b[0m', '═══════════════════════════════════════════════════════════════════════════');
@@ -116,4 +116,4 @@ try {
 }
 
 console.log('\n\x1b[1m\x1b[32m%s\x1b[0m', '🎉 SUCCESS: StoreX Project is NOW Fully Connected & Protected by ThirdEye Trust Layer!');
-console.log('\x1b[36m%s\x1b[0m', '   Refresh your ThirdEye Dashboard (http://localhost:3000/integrations) to view live connectors!\n');
+console.log('\x1b[36m%s\x1b[0m', '   Refresh your ThirdEye Dashboard (https://thirdeye-sec.vercel.app/integrations) to view live connectors!\n');
