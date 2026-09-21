@@ -1,0 +1,143 @@
+{
+  "project": {
+    "name": "StoreX Store",
+    "projectKey": "te_proj_storex_99a8b7c6",
+    "gatewayUrl": "http://localhost:4000",
+    "connectedAt": "2026-09-21T19:48:24.453Z"
+  },
+  "integrations": [
+    {
+      "id": "stripe_pay",
+      "name": "Stripe Payments",
+      "category": "Payments",
+      "route": "/api/payments",
+      "allowedEndpoints": [
+        "/payments",
+        "/payments/status",
+        "/refunds"
+      ],
+      "allowedMethods": [
+        "POST",
+        "GET"
+      ],
+      "allowedData": [
+        "amount",
+        "currency",
+        "order_id",
+        "transaction_id"
+      ],
+      "forbiddenData": [
+        "customer_password_hash",
+        "master_api_secret",
+        "internal_margin"
+      ],
+      "expectedRate": 150
+    },
+    {
+      "id": "fedex_delivery",
+      "name": "ShipFast Logistics",
+      "category": "Logistics",
+      "route": "/api/delivery",
+      "allowedEndpoints": [
+        "/orders",
+        "/orders/dispatch",
+        "/delivery/shipments"
+      ],
+      "allowedMethods": [
+        "GET",
+        "POST"
+      ],
+      "allowedData": [
+        "order_id",
+        "recipient_name",
+        "delivery_address",
+        "phone",
+        "weight_kg"
+      ],
+      "forbiddenData": [
+        "card_number",
+        "cvv",
+        "password_hash"
+      ],
+      "expectedRate": 80
+    },
+    {
+      "id": "segment_analytics",
+      "name": "Segment Analytics (3-Yr Legacy Trial)",
+      "category": "Analytics",
+      "route": "/api/analytics",
+      "allowedEndpoints": [
+        "/analytics/events",
+        "/analytics/metrics"
+      ],
+      "allowedMethods": [
+        "POST",
+        "GET"
+      ],
+      "allowedData": [
+        "anonymous_user_id",
+        "page",
+        "event",
+        "timestamp"
+      ],
+      "forbiddenData": [
+        "payment_info",
+        "phone_number",
+        "customer_address",
+        "credit_card"
+      ],
+      "expectedRate": 200
+    },
+    {
+      "id": "klaviyo_marketing",
+      "name": "Klaviyo Marketing",
+      "category": "Marketing",
+      "route": "/api/campaigns",
+      "allowedEndpoints": [
+        "/campaigns",
+        "/campaigns/broadcast",
+        "/subscribers"
+      ],
+      "allowedMethods": [
+        "POST",
+        "GET"
+      ],
+      "allowedData": [
+        "campaign_id",
+        "email",
+        "first_name",
+        "audience_tag"
+      ],
+      "forbiddenData": [
+        "payment_details",
+        "card_cvv",
+        "order_financials"
+      ],
+      "expectedRate": 95
+    },
+    {
+      "id": "storex_sales_agent_skill",
+      "name": "StoreX Sales AI Agent Skill",
+      "category": "🤖 AI Agent Skill",
+      "route": "/api/agent",
+      "allowedEndpoints": [
+        "/agent/recommend",
+        "/agent/cart-checkout"
+      ],
+      "allowedMethods": [
+        "POST"
+      ],
+      "allowedData": [
+        "item_sku",
+        "session_token",
+        "quantity"
+      ],
+      "forbiddenData": [
+        "full_credit_card",
+        "customer_password_hash",
+        "master_api_secret"
+      ],
+      "expectedRate": 300
+    }
+  ]
+}
