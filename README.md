@@ -49,20 +49,32 @@ Order Tracking
 
 ---
 
-## 🛠️ Tech Stack & Setup
+## 👁️ ThirdEye Security Integration
 
-- **Framework**: Next.js 14 (App Router) + TypeScript
-- **Backend & API**: Native Next.js App Router Route Handlers (`app/api/*`)
-- **Database**: Supabase PostgreSQL (`@supabase/supabase-js`, `@supabase/ssr`)
-- **Styling**: Tailwind CSS + Custom StoreX Deep Blue Design Tokens
-- **Icons**: `lucide-react`
-- **State Management**: React Context Stores (`CartContext`, `WishlistContext`, `OrderContext`)
+StoreX connects directly to the **ThirdEye Continuous Trust Layer** to protect third-party API traffic and AI Agent tool execution.
+
+### 1. Connecting StoreX to ThirdEye via Autonomous Agent Skill
+
+Run the ThirdEye Agent Skill CLI to auto-discover StoreX API routes (`/api/payments`, `/api/delivery`, `/api/analytics`, `/api/campaigns`, `/api/agent`) and connect to ThirdEye:
+
+```bash
+npm run thirdeye:connect
+```
+
+This generates `thirdeye.config.json` and registers project `te_proj_storex_99a8b7c6` with ThirdEye (`http://localhost:4000`).
+
+### 2. Connected APIs & Security Simulation
+
+Once connected, all StoreX integrations are monitored live on the **ThirdEye Security Dashboard** (`http://localhost:3000`). Executing security simulations on `/simulator` (e.g. 3-year stale key leak or AI Agent prompt drift) automatically escalates threat risk levels and places misbehaving integrations into **QUARANTINE**.
+
+---
 
 ### Running Locally
 
 ```bash
 npm install
-npm run dev
+npm run dev               # Run StoreX storefront
+npm run thirdeye:connect  # Run ThirdEye Agent Skill to discover & connect APIs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) (or `http://localhost:3002`) to view the platform.
+Open [http://localhost:3000](http://localhost:3000) for ThirdEye Dashboard and StoreX storefront.
